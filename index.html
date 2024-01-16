@@ -27,6 +27,11 @@
   #canvasHidden {
     display: none;
   }
+  .dwtcontrols {
+    display: none;
+    align-items: center;
+    flex-direction: column;
+  }
   </style>
 </head>
 <body>
@@ -44,6 +49,18 @@
         <option>Dynamic Web TWAIN</option>
       </select>
     </label>
+    <div class="dwtcontrols">
+      <label>
+        Interpolation Method:
+        <select id="interpolationMethodSelect">
+          <option value="1">Nearest Neighbour</option>
+          <option value="2">Bilinear</option>
+          <option value="3">Bicubic</option>
+          <option value="5">Best Quality</option>
+        </select>
+      </label>
+      <button id="detectSkewButton">Detect Skew</button>
+    </div>
     
     <div class="imageContainer">
       <img id="image"/>
@@ -51,18 +68,52 @@
     </div>
     <canvas id="canvasHidden"></canvas>
   </div>
+  <!--<script src="https://unpkg.com/dwt@18.4.2/dist/dynamsoft.webtwain.min.js"></script>-->
+  <script src="/node_modules/dwt/dist/dynamsoft.webtwain.min.js"></script>
   <script>
+    let DWObject;
+    Dynamsoft.DWT.AutoLoad = false;
+    Dynamsoft.DWT.ProductKey = "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ=="; //one-day trial
+    Dynamsoft.DWT.ResourcesPath = "/node_modules/dwt/dist";
+    init();
+
+    function init(){
+      Dynamsoft.DWT.CreateDWTObjectEx(
+        {
+          WebTwainId: 'dwtcontrol'
+        },
+        function(obj) {
+          DWObject = obj;
+        },
+        function(err) {
+          console.log(err);
+        }
+      );
+    }
+
     document.getElementById("loadFileButton").addEventListener("click",function(){
       document.getElementById("file").click();
     })
     document.getElementById("degree").addEventListener("change",function(e){
       const degree = e.target.value;
-      console.log(degree);
       rotateImage(degree);
     })
     document.getElementById("methodSelect").addEventListener("change",function(e){
       rotateImage(document.getElementById("degree").value);
+      toggleControlsForDWT();
     })
+    document.getElementById("interpolationMethodSelect").addEventListener("change",function(e){
+      rotateImage(document.getElementById("degree").value);
+    })
+
+    function toggleControlsForDWT(){
+      const controls = document.getElementsByClassName("dwtcontrols")[0];
+      if (document.getElementById("methodSelect").selectedIndex === 2) {
+        controls.style.display = "flex";
+      }else{
+        controls.style.display = "none";
+      }
+    }
 
     function rotateImage(degree){
       const method = document.getElementById("methodSelect").selectedIndex;
@@ -86,11 +137,8 @@
         image.src = canvas.toDataURL();
       }else if (method == 2){
         image.style.transform = '';
+        rotateImageWithDWT(degree);
       }
-      //const bottom = e.target.offsetTop + e.target.offsetHeight;
-      //const rect = image.getBoundingClientRect();
-      //console.log(rect);
-      //image.style.marginTop = Math.max(0,bottom - rect.top)+"px";
     }
 
     function getBoundingRect(width,height,degree) {
@@ -165,6 +213,55 @@
         console.warn('oops, something went wrong.');
       };
       fileReader.readAsDataURL(file);
+    }
+
+    function rotateImageWithDWT(degree){
+      return new Promise(async (resolve, reject) => {
+        if (DWObject) {
+          DWObject.RemoveAllImages();
+          let file = document.getElementById("file").files[0];
+          let buffer = await file.arrayBuffer();
+          DWObject.LoadImageFromBinary(buffer,
+          function(){
+            console.log(DWObject.HowManyImagesInBuffer);
+            const method = document.getElementById("interpolationMethodSelect").selectedOptions[0].value;
+            DWObject.RotateEx(0,degree,false,method,
+            function(){
+              const displayImage = async () => {
+                const base64 = await convertToBase64WithDWT();
+                document.getElementById("image").src = "data:image/png;base64,"+base64;
+                resolve();
+              }
+              displayImage();
+            },
+            function(errorCode, errorString){
+              reject(errorString);
+            });
+          },
+          function(errorCode, errorString){
+            reject(errorString);
+          })
+          
+        }else{
+          reject();
+        }
+      })
+    }
+
+    function convertToBase64WithDWT(){
+      return new Promise((resolve, reject) => {
+        if (DWObject) {
+          DWObject.ConvertToBase64([0],3,
+          function(result, indices, type){
+            resolve(result.getData(0,result.getLength()));
+          },
+          function(errorCode, errorString){
+            resolve(errorString);
+          })
+        }else{
+          reject();
+        }
+      })
     }
   </script>
 </body>
