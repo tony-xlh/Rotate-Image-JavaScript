@@ -56,7 +56,7 @@
           <option value="1">Nearest Neighbour</option>
           <option value="2">Bilinear</option>
           <option value="3">Bicubic</option>
-          <option value="5">Best Quality</option>
+          <option value="5" selected>Best Quality</option>
         </select>
       </label>
       <button id="detectSkewButton">Detect Skew</button>
@@ -226,7 +226,6 @@
           let buffer = await file.arrayBuffer();
           DWObject.LoadImageFromBinary(buffer,
           function(){
-            console.log(DWObject.HowManyImagesInBuffer);
             const method = document.getElementById("interpolationMethodSelect").selectedOptions[0].value;
             DWObject.RotateEx(0,degree,false,method,
             function(){
