@@ -23,6 +23,10 @@
   #imageHidden {
     display: none;
   }
+
+  #canvasHidden {
+    display: none;
+  }
   </style>
 </head>
 <body>
@@ -45,6 +49,7 @@
       <img id="image"/>
       <img id="imageHidden"/>
     </div>
+    <canvas id="canvasHidden"></canvas>
   </div>
   <script>
     document.getElementById("loadFileButton").addEventListener("click",function(){
@@ -53,21 +58,37 @@
     document.getElementById("degree").addEventListener("change",function(e){
       const degree = e.target.value;
       console.log(degree);
+      rotateImage(degree);
+    })
+    document.getElementById("methodSelect").addEventListener("change",function(e){
+      rotateImage(document.getElementById("degree").value);
+    })
+
+    function rotateImage(degree){
       const method = document.getElementById("methodSelect").selectedIndex;
       const image = document.getElementById("image");
       const imageHidden = document.getElementById("imageHidden");
       if (method == 0) {
+        image.src = imageHidden.src;
         image.style.transform = 'rotate(' + degree + 'deg)';
       }else if (method == 1){
-
+        image.style.transform = '';
+        const canvas = document.getElementById("canvasHidden");
+        canvas.width = imageHidden.naturalWidth;
+        canvas.height = imageHidden.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.translate(canvas.width/2,canvas.height/2);
+        ctx.rotate(degree*Math.PI/180);
+        ctx.drawImage(imageHidden,-canvas.width / 2,-canvas.height / 2);
+        image.src = canvas.toDataURL();
       }else if (method == 2){
-
+        image.style.transform = '';
       }
       //const bottom = e.target.offsetTop + e.target.offsetHeight;
       //const rect = image.getBoundingClientRect();
       //console.log(rect);
       //image.style.marginTop = Math.max(0,bottom - rect.top)+"px";
-    })
+    }
     
 
     function loadImageFromFile(){
