@@ -10,13 +10,39 @@
     align-items: center;
     flex-direction: column;
   }
+  img {
+    max-width: 50%;
+  }
   </style>
 </head>
 <body>
   <div class="home">
     <h2>Rotate an Image</h2>
+    <button id="loadFileBtn">Load a File</button>
+    <input style="display:none;" type="file" id="file" onchange="loadImageFromFile();" accept=".jpg,.jpeg,.png,.bmp" />
+    <img id="image"/>
   </div>
   <script>
+    document.getElementById("loadFileBtn").addEventListener("click",function(){
+      document.getElementById("file").click();
+    })
+
+    function loadImageFromFile(){
+      let fileInput = document.getElementById("file");
+      let files = fileInput.files;
+      if (files.length == 0) {
+        return;
+      }
+      let file = files[0];
+      fileReader = new FileReader();
+      fileReader.onload = function(e){
+        document.getElementById("image").src = e.target.result;
+      };
+      fileReader.onerror = function () {
+        console.warn('oops, something went wrong.');
+      };
+      fileReader.readAsDataURL(file);
+    }
   </script>
 </body>
 </html>
