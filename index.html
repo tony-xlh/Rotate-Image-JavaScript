@@ -94,6 +94,9 @@
     document.getElementById("loadFileButton").addEventListener("click",function(){
       document.getElementById("file").click();
     })
+    document.getElementById("detectSkewButton").addEventListener("click",function(){
+      detectSkew();
+    })
     document.getElementById("degree").addEventListener("change",function(e){
       const degree = e.target.value;
       rotateImage(degree);
@@ -262,6 +265,31 @@
           reject();
         }
       })
+    }
+
+    async function detectSkew(){
+      if (DWObject) {
+        DWObject.RemoveAllImages();
+        let file = document.getElementById("file").files[0];
+        let buffer = await file.arrayBuffer();
+        DWObject.LoadImageFromBinary(buffer,
+        function(){
+          DWObject.GetSkewAngle(
+            0,
+            function(angle) {
+              document.getElementById("degree").value = 360+angle;
+              rotateImage(360+angle);
+            },
+            function(errorCode, errorString) {
+              console.log(errorString);
+            }
+          );
+        },
+        function(errorCode, errorString){
+          console.log(errorString);
+        })
+       
+      }
     }
   </script>
 </body>
