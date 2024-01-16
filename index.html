@@ -20,12 +20,19 @@
     <h2>Rotate an Image</h2>
     <button id="loadFileBtn">Load a File</button>
     <input style="display:none;" type="file" id="file" onchange="loadImageFromFile();" accept=".jpg,.jpeg,.png,.bmp" />
+    <label for="degree">Degree (0-360):</label>
+    <input type="number" id="degree" name="degree" min="0" max="360" value="0"/>
     <img id="image"/>
   </div>
   <script>
     document.getElementById("loadFileBtn").addEventListener("click",function(){
       document.getElementById("file").click();
     })
+    document.getElementById("degree").addEventListener("change",function(e){
+      const degree = e.target.value;
+      console.log(degree);
+    })
+    
 
     function loadImageFromFile(){
       let fileInput = document.getElementById("file");
