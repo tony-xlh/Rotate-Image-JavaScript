@@ -230,12 +230,7 @@
             const method = document.getElementById("interpolationMethodSelect").selectedOptions[0].value;
             DWObject.RotateEx(0,degree,false,method,
             function(){
-              const displayImage = async () => {
-                const base64 = await convertToBase64WithDWT();
-                document.getElementById("image").src = "data:image/png;base64,"+base64;
-                resolve();
-              }
-              displayImage();
+              document.getElementById("image").src = DWObject.GetImageURL(0);
             },
             function(errorCode, errorString){
               reject(errorString);
