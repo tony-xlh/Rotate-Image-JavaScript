@@ -74,12 +74,15 @@
       }else if (method == 1){
         image.style.transform = '';
         const canvas = document.getElementById("canvasHidden");
-        canvas.width = imageHidden.naturalWidth;
-        canvas.height = imageHidden.naturalHeight;
+        const imgWidth = imageHidden.naturalWidth;
+        const imgHeight = imageHidden.naturalHeight;
+        const rect = getBoundingRect(imgWidth,imgHeight,degree);
+        canvas.width = rect.width;
+        canvas.height = rect.height;
         const ctx = canvas.getContext("2d");
         ctx.translate(canvas.width/2,canvas.height/2);
-        ctx.rotate(degree*Math.PI/180);
-        ctx.drawImage(imageHidden,-canvas.width / 2,-canvas.height / 2);
+        ctx.rotate(Degree2Rad(degree));
+        ctx.drawImage(imageHidden, -imgWidth/2, -imgHeight/2);
         image.src = canvas.toDataURL();
       }else if (method == 2){
         image.style.transform = '';
@@ -89,7 +92,62 @@
       //console.log(rect);
       //image.style.marginTop = Math.max(0,bottom - rect.top)+"px";
     }
-    
+
+    function getBoundingRect(width,height,degree) {
+      let rad = Degree2Rad(degree);
+      let points = [{x:0,y:0},{x:width,y:0},{x:width,y:height},{x:0,y:height}];
+      let minX = undefined;
+      let minY = undefined;
+      let maxX = 0;
+      let maxY = 0;
+      for (let index = 0; index < points.length; index++) {
+        const point = points[index];
+        const rotatedPoint = getRotatedPoint(point.x,point.y,width/2,height/2,rad);
+        if (minX == undefined) {
+          minX = rotatedPoint.x;
+        }else{
+          minX = Math.min(rotatedPoint.x,minX);
+        }
+        if (minY == undefined) {
+          minY = rotatedPoint.y;
+        }else{
+          minY = Math.min(rotatedPoint.y,minY);
+        }
+        maxX = Math.max(rotatedPoint.x,maxX);
+        maxY = Math.max(rotatedPoint.y,maxY);
+      }
+      let rectWidth = maxX - minX;
+      let rectHeight = maxY - minY;
+      let rect = {
+        x: minX,
+        y: minY,
+        width: rectWidth,
+        height: rectHeight
+      }
+      console.log(rect);
+      return rect;
+    }
+
+    function Degree2Rad(degree){
+      return degree*Math.PI/180
+    }
+
+    //https://gamedev.stackexchange.com/questions/86755/how-to-calculate-corner-positions-marks-of-a-rotated-tilted-rectangle
+    function getRotatedPoint(x,y,cx,cy,theta){
+      let tempX = x - cx;
+      let tempY = y - cy;
+
+      // now apply rotation
+      let rotatedX = tempX*Math.cos(theta) - tempY*Math.sin(theta);
+      let rotatedY = tempX*Math.sin(theta) + tempY*Math.cos(theta);
+
+      // translate back
+      x = rotatedX + cx;
+      y = rotatedY + cy;
+      let point = {x:x,y:y};
+      console.log(point);
+      return point;
+    }
 
     function loadImageFromFile(){
       let fileInput = document.getElementById("file");
