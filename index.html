@@ -122,6 +122,9 @@
       const method = document.getElementById("methodSelect").selectedIndex;
       const image = document.getElementById("image");
       const imageHidden = document.getElementById("imageHidden");
+      if (!image.src) {
+        return;
+      }
       if (method == 0) {
         image.src = imageHidden.src;
         image.style.transform = 'rotate(' + degree + 'deg)';
@@ -265,6 +268,9 @@
       if (DWObject) {
         DWObject.RemoveAllImages();
         let file = document.getElementById("file").files[0];
+        if (!file) {
+          return;
+        }
         let buffer = await file.arrayBuffer();
         DWObject.LoadImageFromBinary(buffer,
         function(){
